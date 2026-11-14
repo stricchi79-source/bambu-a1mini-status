@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="it" data-theme="pompa">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#c8281e">
+<title>A1 mini</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="A1 mini">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Condensed:wght@600;800&family=VT323&family=Pacifico&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:"DSEG7";font-weight:700;font-display:swap;
+    src:url("https://cdn.jsdelivr.net/npm/dseg@0.46.0/fonts/DSEG7-Classic/DSEG7Classic-Bold.woff2") format("woff2")}
+
+  /* ============ TEMI ============ */
+  /* 1. Pompa di benzina anni 80 */
+  :root,[data-theme="pompa"]{
+    --bg:repeating-linear-gradient(0deg,#0000 0 3px,#0000000a 3px 4px),radial-gradient(120% 80% at 50% 0%,#f3e9d2,#e8dcbf);
+    --sign-bg:#c8281e; --sign-fg:#fff; --title-shadow:2px 2px 0 #7a140e; --title-font:"Bungee",Impact,sans-serif; --title-size:30px;
+    --s1:#c8281e; --s2:#e8731c; --s3:#f2b51d;
+    --plate-bg:repeating-linear-gradient(90deg,#ffffff14 0 1px,#0000 1px 3px),linear-gradient(180deg,#d9dde1,#9aa2aa);
+    --plate-shadow:inset 0 1px 0 #fff9,inset 0 -2px 0 #0003,0 3px 0 #6b737b,0 6px 14px #0003;
+    --screw:radial-gradient(circle at 35% 35%,#fff,#888 60%,#555);
+    --lbl:#c8281e; --lbl-font:800 13px/1 "Barlow Condensed",sans-serif; --lbl-spacing:3px;
+    --dim:#3b3f44; --lamp-lbl:#5a4a3a; --foot:#6a5d4a;
+    --glass:#120b06; --led:#ff8a1e; --glow:#ff6a00; --ghost:#2a1508; --unit:#c9a27a;
+    --led2:#ffd27a; --glow2:#ffb000; --radius:14px;
+  }
+  /* 2. Sala giochi 1986 (synthwave) */
+  [data-theme="arcade"]{
+    --bg:linear-gradient(#0000 62%,#ff2fb922 62.2%,#0000 63%),
+         repeating-linear-gradient(90deg,#ff2fb933 0 1px,#0000 1px 42px),
+         repeating-linear-gradient(0deg,#ff2fb933 0 1px,#0000 1px 42px),
+         radial-gradient(60% 40% at 50% 38%,#ff7a3d55,#0000 70%),
+         linear-gradient(#14012b,#2c0650 55%,#4a0b5e);
+    --sign-bg:linear-gradient(#0d0120,#22043f); --sign-fg:#fff; --title-shadow:0 0 6px #ff2fb9,0 0 18px #ff2fb9,0 0 30px #b400ff;
+    --title-font:"Orbitron",sans-serif; --title-size:23px;
+    --s1:#ff2fb9; --s2:#b400ff; --s3:#00e5ff;
+    --plate-bg:linear-gradient(180deg,#2a0a4acc,#1a0533cc);
+    --plate-shadow:0 0 0 2px #00e5ff,0 0 14px #00e5ff88,inset 0 0 20px #ff2fb922;
+    --screw:radial-gradient(circle,#ff2fb9,#7a0059);
+    --lbl:#ff4fd8; --lbl-font:700 12px/1 "Orbitron",sans-serif; --lbl-spacing:2px;
+    --dim:#c9b8ff; --lamp-lbl:#c9b8ff; --foot:#a99ad6;
+    --glass:#07010f; --led:#29f3ff; --glow:#00c8ff; --ghost:#0c2236; --unit:#7fb6ff;
+    --led2:#ff8ae8; --glow2:#ff2fb9; --radius:6px;
+  }
+  /* 3. Terminale 1982 (fosfori verdi) */
+  [data-theme="terminale"]{
+    --bg:repeating-linear-gradient(0deg,#0000 0 2px,#00000066 2px 3px),radial-gradient(90% 70% at 50% 40%,#0b2a12,#020803);
+    --sign-bg:#020803; --sign-fg:#39ff6a; --title-shadow:0 0 8px #39ff6a99; --title-font:"VT323",monospace; --title-size:44px;
+    --s1:#39ff6a; --s2:#1fa443; --s3:#0e5a24;
+    --plate-bg:#03110699;
+    --plate-shadow:0 0 0 1px #39ff6a,0 0 12px #39ff6a44,inset 0 0 18px #39ff6a1a;
+    --screw:#0000;
+    --lbl:#39ff6a; --lbl-font:400 20px/1 "VT323",monospace; --lbl-spacing:2px;
+    --dim:#7dff9c; --lamp-lbl:#39ff6a; --foot:#2fbf55;
+    --glass:#010a03; --led:#39ff6a; --glow:#1fff50; --ghost:#0a2410; --unit:#39ff6a;
+    --led2:#b6ffc8; --glow2:#39ff6a; --radius:2px;
+  }
+  /* 4. Radio della nonna (legno, ottone, display verde acqua) */
+  [data-theme="radio"]{
+    --bg:repeating-linear-gradient(92deg,#0000 0 9px,#00000018 9px 11px,#0000 11px 23px,#ffffff0d 23px 24px),
+         repeating-linear-gradient(88deg,#0000 0 37px,#0000001f 37px 40px),
+         linear-gradient(180deg,#7a4a26,#5a3318 60%,#4a2810);
+    --sign-bg:linear-gradient(180deg,#f3d58a,#c9973c 55%,#a8761f); --sign-fg:#3a2408; --title-shadow:0 1px 0 #fff6;
+    --title-font:"Bungee",Impact,sans-serif; --title-size:28px;
+    --s1:#3a2408; --s2:#a8761f; --s3:#f3e3b8;
+    --plate-bg:repeating-linear-gradient(90deg,#0000 0 6px,#00000014 6px 7px),linear-gradient(180deg,#3d2412,#2a170a);
+    --plate-shadow:0 0 0 3px #c9973c,inset 0 2px 6px #0008,0 6px 14px #0006;
+    --screw:radial-gradient(circle at 35% 35%,#fff3c4,#c9973c 60%,#6a4a10);
+    --lbl:#f0c96a; --lbl-font:800 13px/1 "Barlow Condensed",sans-serif; --lbl-spacing:3px;
+    --dim:#f3e3b8; --lamp-lbl:#f3e3b8; --foot:#e8cf9a;
+    --glass:#041210; --led:#5ef2d0; --glow:#1fd6b0; --ghost:#0c2a26; --unit:#9fe8d6;
+    --led2:#c8fff2; --glow2:#5ef2d0; --radius:18px;
+  }
+  /* 5. Juke-box anni 50 (rosa, menta, cromature) */
+  [data-theme="jukebox"]{
+    --bg:conic-gradient(#ffffff 25%,#1d1a1d 0 50%,#ffffff 0 75%,#1d1a1d 0) 0 0/56px 56px;
+    --sign-bg:linear-gradient(180deg,#ff7fb0,#e84a8a); --sign-fg:#fff; --title-shadow:3px 3px 0 #9c1e55;
+    --title-font:"Pacifico",cursive; --title-size:27px;
+    --s1:#ff7fb0; --s2:#ffffff; --s3:#7fe3c8;
+    --plate-bg:linear-gradient(180deg,#b9f3e2,#7fe3c8);
+    --plate-shadow:0 0 0 4px #e9eef2,0 0 0 6px #9aa2aa,0 8px 16px #0005;
+    --screw:radial-gradient(circle at 35% 35%,#fff,#ff7fb0 60%,#9c1e55);
+    --lbl:#c2185b; --lbl-font:800 14px/1 "Barlow Condensed",sans-serif; --lbl-spacing:3px;
+    --dim:#1d3a33; --lamp-lbl:#1d1a1d; --foot:#1d1a1d;
+    --glass:#16060c; --led:#ff3355; --glow:#ff0033; --ghost:#3a0b14; --unit:#ff9db4;
+    --led2:#ffd0dc; --glow2:#ff3355; --radius:28px;
+  }
+  /* 6. Missione Luna 1969 (pannelli grigi tra le stelle) */
+  [data-theme="luna"]{
+    --bg:radial-gradient(1.2px 1.2px at 12% 18%,#fff,#0000),radial-gradient(1px 1px at 72% 9%,#fff,#0000),
+         radial-gradient(1.5px 1.5px at 40% 62%,#fff,#0000),radial-gradient(1px 1px at 88% 44%,#fff,#0000),
+         radial-gradient(1px 1px at 25% 85%,#fff,#0000),radial-gradient(1.3px 1.3px at 60% 30%,#fff,#0000),
+         radial-gradient(1px 1px at 8% 50%,#ddd,#0000),radial-gradient(1px 1px at 93% 78%,#ddd,#0000),
+         radial-gradient(60% 50% at 90% 100%,#9aa3ad55,#0000 60%),
+         linear-gradient(#02040a,#0a1020);
+    --sign-bg:#e9ecef; --sign-fg:#0a1020; --title-shadow:none; --title-font:"Orbitron",sans-serif; --title-size:23px;
+    --s1:#0a1020; --s2:#c8281e; --s3:#e9ecef;
+    --plate-bg:repeating-linear-gradient(0deg,#0000 0 2px,#0000000d 2px 3px),linear-gradient(180deg,#6b737b,#4b5157);
+    --plate-shadow:inset 0 1px 0 #fff4,0 0 0 2px #2a2f34,0 6px 14px #0008;
+    --screw:radial-gradient(circle at 35% 35%,#eee,#777 60%,#333);
+    --lbl:#ffffff; --lbl-font:700 11px/1 "Orbitron",sans-serif; --lbl-spacing:2px;
+    --dim:#dfe4e8; --lamp-lbl:#cfd6dc; --foot:#9aa3ad;
+    --glass:#050807; --led:#7dff7a; --glow:#3cff3c; --ghost:#0d200d; --unit:#b4ffb2;
+    --led2:#e6ffe5; --glow2:#7dff7a; --radius:4px;
+  }
+
+  /* 7. Ugello rovente: si scalda insieme alla stampante (--heat da 0 a 1, impostato da JS) */
+  :root{--heat:0}
+  [data-theme="rovente"]{
+    --bg:linear-gradient(180deg,#0d1620,#1a2633 60%,#0b0f14);
+    --sign-bg:linear-gradient(180deg,#1c1c20,#0c0c0e); --sign-fg:#ffd9a0;
+    --title-shadow:0 0 calc(3px + 14px * var(--heat)) #ff5a00,0 0 calc(30px * var(--heat)) #ff2a00;
+    --title-font:"Bungee",Impact,sans-serif; --title-size:30px;
+    --s1:#ffd000; --s2:#ff6a00; --s3:#c81e00;
+    --plate-bg:linear-gradient(180deg,#2a2d3399,#151619b3);
+    --plate-shadow:0 0 0 1px #000,0 0 calc(4px + 20px * var(--heat)) rgba(255,90,0,calc(.15 + .6 * var(--heat))),inset 0 1px 0 #ffffff1a;
+    --screw:radial-gradient(circle at 35% 35%,#ccc,#555 60%,#222);
+    --lbl:#ff9a3c; --lbl-font:800 13px/1 "Barlow Condensed",sans-serif; --lbl-spacing:3px;
+    --dim:#e0d2c4; --lamp-lbl:#e0d2c4; --foot:#c0b0a0;
+    --glass:#0a0505; --led:#ffe7a3; --glow:#ff5a00; --ghost:#2a0d05; --unit:#ffb36b;
+    --led2:#ffffff; --glow2:#ff8a00; --radius:12px;
+  }
+  [data-theme="rovente"][data-heat="freddo"]{
+    --led:#9fd8ff; --glow:#2a8cff; --ghost:#0a1a2a; --lbl:#7fb8e8; --unit:#9fd8ff;
+    --led2:#dff2ff; --glow2:#2a8cff; --sign-fg:#cfe6ff; --s1:#9fd8ff; --s2:#3a7cc0; --s3:#1a3a5c}
+  [data-theme="rovente"][data-heat="tiepido"]{--led:#ffc27a; --glow:#ff7a1a; --ghost:#2a1408}
+  #glow{position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; transition:opacity 2s;
+    background:radial-gradient(140% 75% at 50% 112%,#ffd04a 0%,#ff6a00 22%,#c41a00 45%,#4a0700 70%,#0000 92%)}
+  #fire{position:fixed; left:0; bottom:0; width:100%; height:45vh; z-index:0; pointer-events:none;
+    display:none; filter:blur(3px); opacity:.95}
+  [data-theme="rovente"] #glow{opacity:calc(.9 * var(--heat))}
+  [data-theme="rovente"] #fire{display:block}
+  [data-theme="rovente"] body{padding-bottom:28vh}
+  [data-theme="rovente"] .plate{-webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px)}
+  body > :not(#glow):not(#fire):not(.toast){position:relative; z-index:1}
+
+  /* ============ STRUTTURA ============ */
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{min-height:100vh; color:var(--dim); background:var(--bg); background-attachment:fixed;
+    font:600 16px/1.3 "Barlow Condensed",system-ui,sans-serif;
+    padding:0 16px 24px; padding-bottom:max(24px,env(safe-area-inset-bottom)); transition:background .3s}
+
+  .sign{margin:0 -16px 18px; padding-top:max(14px,env(safe-area-inset-top));
+    background:var(--sign-bg); color:var(--sign-fg); text-align:center; position:relative; box-shadow:0 4px 0 #0002}
+  .sign h1{margin:0; font:400 var(--title-size)/1.1 var(--title-font); letter-spacing:1px; text-shadow:var(--title-shadow)}
+  .sign .sub{font:800 13px/1 "Barlow Condensed",sans-serif; letter-spacing:4px; opacity:.9; padding:6px 44px 12px}
+  .stripes{height:30px; background:linear-gradient(var(--s1) 0 33%,var(--s2) 33% 66%,var(--s3) 66%)}
+  .stripes.thin{height:12px; margin:0 -16px}
+
+  .tema{position:absolute; right:10px; top:max(10px,env(safe-area-inset-top)); width:38px; height:38px;
+    border-radius:50%; border:2px solid currentColor; background:#0000; color:inherit; font-size:18px;
+    cursor:pointer; display:grid; place-items:center; -webkit-tap-highlight-color:transparent}
+  .tema:active{transform:scale(.92)}
+  .toast{position:fixed; left:50%; top:40%; transform:translate(-50%,-50%) scale(.9); opacity:0; pointer-events:none;
+    background:#000c; color:#fff; padding:14px 22px; border-radius:14px; font:800 20px "Barlow Condensed",sans-serif;
+    letter-spacing:2px; transition:.25s; text-align:center; z-index:9}
+  .toast.show{opacity:1; transform:translate(-50%,-50%) scale(1)}
+  .toast small{display:block; font-size:13px; opacity:.7; letter-spacing:1px}
+
+  .plate{position:relative; border-radius:var(--radius); padding:14px; margin-bottom:14px;
+    background:var(--plate-bg); box-shadow:var(--plate-shadow)}
+  .plate::before,.plate::after{content:""; position:absolute; top:8px; width:8px; height:8px; border-radius:50%; background:var(--screw)}
+  .plate::before{left:8px} .plate::after{right:8px}
+
+  .lbl{font:var(--lbl-font); letter-spacing:var(--lbl-spacing); text-transform:uppercase; color:var(--lbl); text-align:center; margin:2px 0 8px}
+
+  .win{position:relative; background:var(--glass); border-radius:8px; padding:10px 12px;
+    box-shadow:inset 0 3px 10px #000, inset 0 0 0 2px #000, 0 1px 0 #fff4; overflow:hidden; text-align:right}
+  .win::after{content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(160deg,#ffffff1c 0 30%,#0000 31%)}
+  .seg{position:relative; display:inline-block; font-family:"DSEG7","Courier New",monospace; font-weight:700; line-height:1}
+  .seg .g{color:var(--ghost)}
+  .seg .v{position:absolute; right:0; top:0; color:var(--led); text-shadow:0 0 6px var(--glow),0 0 14px var(--glow)}
+  .xl{font-size:56px} .lg{font-size:34px} .md{font-size:24px}
+  .unit{font:800 14px "Barlow Condensed",sans-serif; color:var(--unit); margin-left:6px; vertical-align:top}
+
+  .ledbar{display:grid; grid-template-columns:repeat(20,1fr); gap:3px; margin-top:10px}
+  .ledbar i{height:12px; border-radius:2px; background:var(--ghost)}
+  .ledbar i.on{background:var(--led); box-shadow:0 0 6px var(--glow)}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .grid2 .plate{margin:0}
+  .tgt{display:flex; justify-content:space-between; align-items:center; margin-top:8px;
+    font:800 12px "Barlow Condensed",sans-serif; letter-spacing:2px; color:var(--dim)}
+  .tgt .seg{font-size:16px}
+  .tgt .seg .v{color:var(--led2); text-shadow:0 0 5px var(--glow2)}
+  .tgt .win{padding:4px 8px}
+
+  .row3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  .row3 .win{text-align:center}
+  .info{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px}
+  .info .lbl{margin-bottom:6px}
+
+  .lamps{display:flex; justify-content:center; gap:18px; margin:4px 0 14px}
+  .lamp{display:flex; flex-direction:column; align-items:center; gap:4px;
+    font:800 11px "Barlow Condensed",sans-serif; letter-spacing:2px; color:var(--lamp-lbl)}
+  .lamp i{width:22px; height:22px; border-radius:50%; border:3px solid #8c8c8c;
+    background:radial-gradient(circle at 35% 35%,#7a6a5a,#4a3a2a); box-shadow:inset 0 2px 4px #0006}
+  .lamp.on.g i{background:radial-gradient(circle at 35% 35%,#d6ffd9,#3ddc5a); box-shadow:0 0 12px #3ddc5a}
+  .lamp.on.y i{background:radial-gradient(circle at 35% 35%,#fff3c4,#f2b51d); box-shadow:0 0 12px #f2b51d}
+  .lamp.on.r i{background:radial-gradient(circle at 35% 35%,#ffd0cc,#ff3b2f); box-shadow:0 0 12px #ff3b2f}
+
+  .file{font:800 15px "Barlow Condensed",sans-serif; text-align:center; color:var(--dim); margin:-2px 0 10px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  footer{text-align:center; font:600 13px "Barlow Condensed",sans-serif; color:var(--foot); margin-top:6px; letter-spacing:1px}
+  .msg{text-align:center; font:800 14px "Barlow Condensed",sans-serif; letter-spacing:2px; color:var(--lbl); min-height:18px}
+
+  /* ritocchi per tema */
+  [data-theme="jukebox"] .lamps,[data-theme="jukebox"] .msg,[data-theme="jukebox"] footer{
+    background:#fffffff0; border-radius:14px; padding:8px 4px}
+  [data-theme="jukebox"] .lamps{padding:10px 4px 8px}
+  [data-theme="jukebox"] .stripes{background:repeating-linear-gradient(90deg,var(--s1) 0 20px,var(--s2) 20px 40px,var(--s3) 40px 60px)}
+  [data-theme="jukebox"] .msg:empty{display:none}
+  [data-theme="terminale"] .win::after,[data-theme="terminale"] .plate::before,[data-theme="terminale"] .plate::after{display:none}
+  [data-theme="terminale"] .sign .sub,[data-theme="terminale"] .file,[data-theme="terminale"] footer,
+  [data-theme="terminale"] .lamp,[data-theme="terminale"] .tgt,[data-theme="terminale"] .msg{font-family:"VT323",monospace; font-size:18px; font-weight:400}
+  [data-theme="terminale"] .sign h1::after{content:"_"; animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  [data-theme="arcade"] .sign .sub{color:#00e5ff; text-shadow:0 0 6px #00e5ff}
+  [data-theme="arcade"] .row3 .lbl,[data-theme="luna"] .row3 .lbl{font-size:9.5px; letter-spacing:1px; white-space:nowrap}
+  .sign h1{padding:0 46px}
+
+  @media (max-width:360px){ .xl{font-size:46px} .lg{font-size:28px} .sign h1{font-size:calc(var(--title-size) * .82)} }
+
+  /* ============ A1 mini: fase, filamento, telecamera, comandi ============ */
+  .stage{text-align:center; font:800 13px "Barlow Condensed",sans-serif; letter-spacing:2px; color:var(--dim);
+    text-transform:uppercase; min-height:16px; margin:-6px 0 10px}
+  .chip{display:inline-flex; align-items:center; gap:6px}
+  .chip i{width:14px; height:14px; border-radius:50%; border:2px solid #0006; display:inline-block}
+  .cam{position:relative; border-radius:8px; overflow:hidden; background:var(--glass); aspect-ratio:16/9;
+    box-shadow:inset 0 3px 10px #000, inset 0 0 0 2px #000}
+  .cam img{width:100%; height:100%; object-fit:cover; display:block}
+  .cam span{position:absolute; inset:0; display:grid; place-items:center; color:var(--unit);
+    font:800 14px "Barlow Condensed",sans-serif; letter-spacing:2px; text-align:center; padding:8px}
+  .cam span[hidden]{display:none}
+  .btns{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .btns.four{grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px}
+  .btn{appearance:none; border:0; border-radius:calc(var(--radius) * .6 + 4px); padding:14px 6px; cursor:pointer;
+    font:800 17px/1 "Barlow Condensed",sans-serif; letter-spacing:2px; text-transform:uppercase;
+    color:var(--led2); background:var(--glass); box-shadow:inset 0 0 0 2px var(--led), 0 0 10px var(--glow);
+    -webkit-tap-highlight-color:transparent; touch-action:manipulation}
+  .btn:active{transform:scale(.96)}
+  .btn[disabled]{opacity:.3; box-shadow:inset 0 0 0 2px var(--ghost); cursor:default}
+  .btn.danger{color:#fff; background:#b3261e; box-shadow:inset 0 0 0 2px #ff8a80, 0 0 10px #ff3b2f88}
+  .btn.sm{font-size:14px; padding:10px 2px; letter-spacing:1px}
+  .btn.sel{background:var(--led); color:var(--glass)}
+  .hms{font:700 13px "Barlow Condensed",sans-serif; color:#ff6b5e; text-align:center; letter-spacing:1px}
+  dialog{border:0; border-radius:16px; padding:20px; max-width:320px; width:calc(100% - 32px);
+    font:600 17px/1.3 "Barlow Condensed",sans-serif; text-align:center; background:#fff; color:#222}
+  dialog::backdrop{background:#000a}
+  dialog h3{margin:0 0 8px; font:800 22px "Barlow Condensed",sans-serif; letter-spacing:1px}
+  dialog .btns{margin-top:16px}
+  dialog .btn{color:#222; background:#eee; box-shadow:none}
+  dialog .btn.danger{color:#fff; background:#b3261e}
+</style>
+</head>
+<body>
+<div id="glow"></div>
+<canvas id="fire" width="64" height="40"></canvas>
+
+<div class="sign">
+  <button class="tema" id="tema" aria-label="Cambia sfondo" title="Cambia sfondo">🎨</button>
+  <h1>BAMBU A1 MINI</h1>
+  <div class="sub" id="sub">STAZIONE DI STAMPA · PLA SUPER</div>
+  <div class="stripes"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<div class="lamps">
+  <div class="lamp g" id="l-print"><i></i>STAMPA</div>
+  <div class="lamp y" id="l-pause"><i></i>PAUSA</div>
+  <div class="lamp g" id="l-done"><i></i>FINITA</div>
+  <div class="lamp r" id="l-err"><i></i>ERRORE</div>
+</div>
+<div class="msg" id="msg"></div>
+<div class="stage" id="stage"></div>
+
+<div class="plate">
+  <div class="lbl">Avanzamento</div>
+  <div class="file" id="file">—</div>
+  <div class="win"><span class="seg xl" id="pct"></span><span class="unit">%</span>
+    <div class="ledbar" id="bar"></div>
+  </div>
+  <div class="info">
+    <div><div class="lbl">Layer</div><div class="win"><span class="seg md" id="layer"></span></div></div>
+    <div><div class="lbl">Mancano h:mm</div><div class="win"><span class="seg md" id="left"></span></div></div>
+    <div><div class="lbl">Trascorso</div><div class="win"><span class="seg md" id="job"></span></div></div>
+    <div><div class="lbl">Fine alle</div><div class="win"><span class="seg md" id="eta"></span></div></div>
+  </div>
+</div>
+
+<div class="grid2">
+  <div class="plate">
+    <div class="lbl">Ugello °C</div>
+    <div class="win"><span class="seg lg" id="nt"></span></div>
+    <div class="tgt">META <div class="win"><span class="seg" id="ntt"></span></div></div>
+  </div>
+  <div class="plate">
+    <div class="lbl">Piano °C</div>
+    <div class="win"><span class="seg lg" id="bt"></span></div>
+    <div class="tgt">META <div class="win"><span class="seg" id="btt"></span></div></div>
+  </div>
+</div>
+
+<div class="plate" style="margin-top:14px">
+  <div class="row3">
+    <div><div class="lbl">Ventola %</div><div class="win"><span class="seg md" id="fan"></span></div></div>
+    <div><div class="lbl">Velocità %</div><div class="win"><span class="seg md" id="spd"></span></div></div>
+    <div><div class="lbl">Wi-Fi dBm</div><div class="win"><span class="seg md" id="wifi"></span></div></div>
+  </div>
+  <div class="tgt" style="justify-content:center; gap:10px; margin-top:12px">
+    FILAMENTO <span class="chip" id="fil"><i></i>—</span>
+  </div>
+</div>
+
+<div class="plate">
+  <div class="lbl">Comandi</div>
+  <div class="btns">
+    <button class="btn" id="b-pause" disabled>Pausa</button>
+    <button class="btn danger" id="b-stop" disabled>Stop</button>
+  </div>
+  <div class="btns four" id="speeds">
+    <button class="btn sm" data-l="1">Silenz.</button>
+    <button class="btn sm" data-l="2">Standard</button>
+    <button class="btn sm" data-l="3">Sport</button>
+    <button class="btn sm" data-l="4">Ludicr.</button>
+  </div>
+  <div class="btns" style="margin-top:10px">
+    <button class="btn" id="b-light">Luce</button>
+    <button class="btn" id="b-cam">Telecamera</button>
+  </div>
+  <div class="hms" id="hms"></div>
+  <a class="btn" href="entrambe" style="display:block; text-align:center; text-decoration:none; margin-top:10px">Tutte e due le stampanti</a>
+</div>
+
+<div class="plate" id="p-cam" hidden>
+  <div class="lbl">Telecamera</div>
+  <div class="cam"><img id="cam" alt=""><span id="cam-msg">collegamento…</span></div>
+</div>
+
+<dialog id="dlg">
+  <h3 id="dlg-t"></h3>
+  <div id="dlg-m"></div>
+  <div class="btns"><button class="btn" id="dlg-no">Annulla</button><button class="btn danger" id="dlg-yes">Conferma</button></div>
+</dialog>
+
+<div class="stripes thin"></div>
+<footer id="upd">—</footer>
+
+<script>
+// ---------- Temi ----------
+const THEMES = [
+  {id:"pompa",     name:"Pompa di benzina '80", sub:"STAZIONE DI STAMPA · PLA SUPER",  color:"#c8281e"},
+  {id:"arcade",    name:"Sala giochi 1986",     sub:"INSERT COIN · PLAYER 1 READY",    color:"#14012b"},
+  {id:"terminale", name:"Terminale 1982",       sub:"> STATO STAMPANTE IN LINEA",      color:"#020803"},
+  {id:"radio",     name:"Radio della nonna",    sub:"ONDE MEDIE · FILAMENTO FM",       color:"#c9973c"},
+  {id:"jukebox",   name:"Juke-box anni '50",    sub:"SELEZIONE A7 · ROCK 'N' PLA",     color:"#e84a8a"},
+  {id:"luna",      name:"Missione Luna 1969",   sub:"CONTROLLO MISSIONE · TUTTO OK",   color:"#e9ecef"},
+  {id:"rovente",   name:"🔥 Ugello rovente",     sub:"",                                color:"#0c0c0e"},
+];
+let ti = 0;
+function applyTheme(i, announce){
+  ti = (i + THEMES.length) % THEMES.length;
+  const t = THEMES[ti];
+  document.documentElement.dataset.theme = t.id;
+  document.getElementById("sub").textContent = t.sub;
+  if (t.id === "rovente") { try { heatUpdate(); } catch(_) {} }   // al primo avvio ci pensa render()
+  document.querySelector('meta[name="theme-color"]').content = t.color;
+  try { localStorage.setItem("a1-tema", t.id); } catch(_){}
+  if (announce) {
+    const el = document.getElementById("toast");
+    el.innerHTML = `${t.name}<small>${ti + 1} di ${THEMES.length}</small>`;
+    el.classList.add("show"); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 1200);
+  }
+}
+(function(){
+  let want = new URLSearchParams(location.search).get("tema");
+  if (!want) { try { want = localStorage.getItem("a1-tema"); } catch(_){} }
+  const i = THEMES.findIndex(t => t.id === want);
+  applyTheme(i < 0 ? 0 : i, false);
+})();
+document.getElementById("tema").onclick = () => applyTheme(ti + 1, true);
+
+// ---------- Stato stampante ----------
+let HOST = "stampante";
+const s = {};
+let last = 0;
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(v); return isNaN(n) ? null : n; };
+
+// Display a 7 segmenti: cifre accese sopra, "8" spenti sotto.
+function seg(id, text, width){
+  text = String(text);
+  if (width) text = text.padStart(width, "!");      // "!" = cifra vuota in DSEG
+  const el = $(id);
+  el.innerHTML = '<span class="g"></span><span class="v"></span>';
+  el.firstChild.textContent = text.replace(/[0-9!\-]/g, "8");
+  el.lastChild.textContent = text;
+}
+const hm = sec => { sec = num(sec); if (sec == null) return "-:--"; sec = Math.max(0, Math.round(sec));
+  return Math.floor(sec/3600) + ":" + String(Math.floor(sec%3600/60)).padStart(2,"0"); };
+const t1 = v => { v = num(v); return v == null ? "---.-" : v.toFixed(1); };
+
+const bar = $("bar");
+for (let i = 0; i < 20; i++) bar.appendChild(document.createElement("i"));
+
+// Stati Bambu: IDLE, PREPARE, RUNNING, PAUSE, FINISH, FAILED
+function lamps(st, err){
+  $("l-print").classList.toggle("on", st === "RUNNING" || st === "PREPARE");
+  $("l-pause").classList.toggle("on", st === "PAUSE");
+  $("l-done").classList.toggle("on", st === "FINISH");
+  $("l-err").classList.toggle("on", !!err || st === "FAILED");
+}
+
+// Tempo trascorso: la A1 non lo invia, lo contiamo da quando vediamo la stampa partire.
+let startSeen = null, startJob = null;
+
+function render(){
+  const st = s.state, err = s.error || (s.hms && s.hms.length);
+  const active = st === "RUNNING" || st === "PREPARE" || st === "PAUSE";
+  lamps(st, err);
+  $("msg").textContent = s.error ? "ERRORE " + s.error : st === "FAILED" ? "STAMPA INTERROTTA" :
+                         st === "IDLE" ? "STAMPANTE FERMA" : st === "FINISH" ? "STAMPA COMPLETATA" : "";
+  $("stage").textContent = active && s.stage ? s.stage : "";
+  $("file").textContent = s.job || "—";
+  const p = Math.max(0, Math.min(100, num(s.percent) ?? 0));
+  seg("pct", p, 3);
+  [...bar.children].forEach((b, i) => b.classList.toggle("on", i < Math.round(p / 5)));
+  seg("layer", (s.layer ?? 0) + "-" + (s.total_layers ?? 0));
+  const L = (num(s.remaining_min) ?? 0) * 60;
+  seg("left", active ? hm(L) : "-:--", 5);
+  if (active && st !== "PAUSE" && (startJob !== s.job || startSeen == null)) {
+    startJob = s.job; startSeen = Date.now() - (p > 0 && L > 0 ? L * p / (100 - p) * 1000 : 0);
+  }
+  if (!active) { startSeen = null; startJob = null; }
+  seg("job", startSeen ? hm((Date.now() - startSeen) / 1000) : "-:--", 5);
+  if (active && L) { const d = new Date(Date.now() + L*1000);
+    seg("eta", String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0")); }
+  else seg("eta", "--:--");
+  const nz = s.nozzle || {}, bd = s.bed || {};
+  seg("nt", t1(nz.current_c), 5); seg("ntt", t1(nz.target_c), 5);
+  seg("bt", t1(bd.current_c), 5); seg("btt", t1(bd.target_c), 5);
+  seg("fan", s.fan_part ?? 0, 3);
+  seg("spd", s.speed_pct ?? 100, 3);
+  seg("wifi", String(s.wifi || "").replace(/dBm/i, "") || "---", 3);
+  const f = s.filament || {};
+  $("fil").innerHTML = `<i style="background:${f.color || "#0000"}"></i>${f.type || "—"}`;
+  // comandi
+  const pb = $("b-pause");
+  pb.disabled = !active; pb.textContent = st === "PAUSE" ? "Riprendi" : "Pausa";
+  $("b-stop").disabled = !active;
+  document.querySelectorAll("#speeds .btn").forEach(b => {
+    b.disabled = !active; b.classList.toggle("sel", +b.dataset.l === s.speed_level);
+  });
+  $("b-light").textContent = s.light === "on" ? "Luce: accesa" : "Luce: spenta";
+  $("hms").textContent = s.hms && s.hms.length ? "Avvisi: " + s.hms.join(", ") : "";
+  heatUpdate();
+}
+
+// ---------- Comandi ----------
+function toast(text){
+  const el = $("toast"); el.innerHTML = text;
+  el.classList.add("show"); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 1600);
+}
+function ask(title, text){
+  return new Promise(res => {
+    const d = $("dlg"); $("dlg-t").textContent = title; $("dlg-m").textContent = text;
+    $("dlg-yes").onclick = () => { d.close(); res(true); };
+    $("dlg-no").onclick = () => { d.close(); res(false); };
+    d.showModal();
+  });
+}
+async function cmd(action, extra){
+  try {
+    const r = await fetch("cmd", {method:"POST", headers:{"Content-Type":"application/json"},
+                                  body: JSON.stringify(Object.assign({action}, extra || {}))});
+    const j = await r.json();
+    toast(j.ok ? "✓ " + (j.message || "Fatto") : "✗ " + (j.message || "Errore"));
+    setTimeout(poll, 800);
+  } catch(e) { toast("✗ PC non raggiungibile"); }
+}
+$("b-pause").onclick = async () => {
+  if (s.state === "PAUSE") cmd("resume");
+  else if (await ask("Mettere in pausa?", `"${s.job || "stampa"}" verrà messa in pausa.`)) cmd("pause");
+};
+$("b-stop").onclick = async () => {
+  if (await ask("Fermare la stampa?", `"${s.job || "stampa"}" verrà annullata definitivamente: non si potrà riprendere.`)) cmd("stop");
+};
+document.querySelectorAll("#speeds .btn").forEach(b => b.onclick = () => cmd("speed", {level: +b.dataset.l}));
+$("b-light").onclick = () => cmd(s.light === "on" ? "light_off" : "light_on");
+
+// ---------- Telecamera ----------
+let camOn = false, camTimer = null;
+function camTick(){
+  if (!camOn) return;
+  const img = new Image();
+  img.onload = () => { $("cam").src = img.src; $("cam-msg").hidden = true; camTimer = setTimeout(camTick, 700); };
+  img.onerror = () => { $("cam-msg").hidden = false; $("cam-msg").textContent = "collegamento alla telecamera…"; camTimer = setTimeout(camTick, 2000); };
+  img.src = "cam.jpg?t=" + Date.now();
+}
+$("b-cam").onclick = () => {
+  camOn = !camOn; $("p-cam").hidden = !camOn; $("b-cam").classList.toggle("sel", camOn);
+  clearTimeout(camTimer); if (camOn) { camTick(); $("p-cam").scrollIntoView({behavior:"smooth"}); }
+};
+document.addEventListener("visibilitychange", () => { if (!document.hidden && camOn) { clearTimeout(camTimer); camTick(); } });
+
+// ---------- Tema "Ugello rovente" ----------
+// ?caldo=150 forza la temperatura usata per l'effetto (per provarlo a stampante fredda).
+const FAKE = num(new URLSearchParams(location.search).get("caldo"));
+let heat = 0, fireLevel = 0;
+function heatUpdate(){
+  const t = FAKE ?? num((s.nozzle || {}).current_c) ?? 20;
+  const target = num((s.nozzle || {}).target_c) || 0;
+  heat = Math.max(0, Math.min(1, (t - 35) / (200 - 35)));
+  fireLevel = Math.max(0, Math.min(1, (heat - 0.55) / 0.45));
+  const root = document.documentElement;
+  root.style.setProperty("--heat", heat.toFixed(3));
+  const lvl = t < 45 ? "freddo" : t < 120 ? "tiepido" : t < 190 ? "caldo" : "rovente";
+  root.dataset.heat = lvl;
+  if (root.dataset.theme !== "rovente") return;
+  const cooling = !FAKE && target === 0 && t >= 45;
+  $("sub").textContent =
+    cooling           ? `SI RAFFREDDA · ${Math.round(t)}°C` :
+    lvl === "freddo"  ? "UGELLO FREDDO · IN ATTESA" :
+    lvl === "tiepido" ? `SI SCALDA… ${Math.round(t)}°C` :
+    lvl === "caldo"   ? `QUASI PRONTO · ${Math.round(t)}°C` :
+                        `ROVENTE · ${Math.round(t)}°C`;
+}
+
+// Fuoco a "pixel" che sale dal basso; la sua forza segue fireLevel.
+(function fire(){
+  const cv = $("fire"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  const px = new Uint8Array(W * H), img = ctx.createImageData(W, H);
+  const stops = [[0,0,0,0],[8,122,10,0],[16,212,42,0],[24,255,122,0],[30,255,196,0],[36,255,246,208]];
+  const pal = [];
+  for (let i = 0; i <= 36; i++) {
+    let a = stops[0], b = stops[stops.length-1];
+    for (let k = 0; k < stops.length - 1; k++) if (i >= stops[k][0] && i <= stops[k+1][0]) { a = stops[k]; b = stops[k+1]; break; }
+    const f = b[0] === a[0] ? 0 : (i - a[0]) / (b[0] - a[0]);
+    pal.push([0,1,2].map(c => Math.round(a[c+1] + (b[c+1] - a[c+1]) * f)).concat(Math.min(255, i * 26)));
+  }
+  let lastT = 0;
+  function step(ts){
+    requestAnimationFrame(step);
+    if (document.documentElement.dataset.theme !== "rovente" || document.hidden || ts - lastT < 50) return;
+    lastT = ts;
+    const src = Math.round(36 * fireLevel);
+    for (let x = 0; x < W; x++) px[(H-1)*W + x] = Math.random() < 0.85 ? src : Math.max(0, src - 8);
+    for (let x = 0; x < W; x++) for (let y = 1; y < H; y++) {
+      const i = y*W + x, r = (Math.random() * 3) | 0;
+      const d = i - r + 1 - W;
+      if (d >= 0) px[d] = Math.max(0, px[i] - (r & 1));
+    }
+    for (let i = 0; i < W*H; i++) { const c = pal[px[i]], o = i*4; img.data[o]=c[0]; img.data[o+1]=c[1]; img.data[o+2]=c[2]; img.data[o+3]=c[3]; }
+    ctx.putImageData(img, 0, 0);
+  }
+  requestAnimationFrame(step);
+})();
+
+async function poll(){
+  try {
+    const r = await fetch("status", {cache:"no-store"});
+    const j = await r.json();
+    HOST = j.ip || HOST;
+    if (j.ok) { Object.assign(s, j); last = Date.now() - (j.age || 0)*1000; render(); }
+    if (!j.ok || j.age > 60) { $("msg").textContent = "STAMPANTE NON RAGGIUNGIBILE"; lamps(null, true); }
+  } catch(e) { $("msg").textContent = "PC NON RAGGIUNGIBILE"; lamps(null, true); }
+}
+render();
+setInterval(() => { $("upd").textContent = last ? `aggiornato ${Math.round((Date.now()-last)/1000)} s fa · ${HOST}` : `in attesa di ${HOST}…`; }, 1000);
+poll(); setInterval(poll, 2000);
+</script>
+</body>
+</html>

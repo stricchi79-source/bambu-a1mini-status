@@ -1,0 +1,4 @@
+printers.toml
+server.log
+__pycache__/
+*.pyc

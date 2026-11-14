@@ -1,0 +1,15 @@
+# Configurazione delle stampanti Bambu Lab (copia questo file in printers.toml).
+#
+# Dove trovare i dati (sul display della stampante):
+#   ip           -> Impostazioni > Rete (WLAN/LAN)
+#   serial       -> Impostazioni > Dispositivo
+#   access_code  -> Impostazioni > Rete > "Codice di accesso" (8 caratteri)
+#
+# Sulla stampante vanno attivate la "Modalità solo LAN" e la "Modalità sviluppatore".
+# Ogni sezione [printers.<nome>] è una stampante; <nome> è quello da usare nei tool.
+
+[printers.a1mini]
+model = "A1 mini"
+ip = "192.168.1.50"
+serial = "0300AA000000000"
+access_code = "12345678"
