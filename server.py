@@ -1,7 +1,12 @@
 """Schermino di stato e comandi per la Bambu Lab A1 mini (LAN), da aprire sul telefono.
 
-Uso: python server.py [nome_stampante] [porta]     (default: l'unica in printers.toml, 8090)
+Uso: python server.py [nome_stampante] [porta] [--ntfy ARGOMENTO]
+     (default: l'unica in printers.toml, porta 8090, notifiche spente)
 Dal telefono apri http://IP-DEL-PC:8090  (vista con anche la Ender: http://IP-DEL-PC:8090/entrambe)
+
+Con --ntfy arriva una notifica sul telefono (app gratuita ntfy, e quindi anche sullo
+smartwatch che ripete le notifiche) quando la stampa inizia, va in pausa, finisce,
+si interrompe o va in errore.
 
 - GET  /status   stato in JSON (via MQTT, riusa bambu_server.py)
 - GET  /cam.jpg  ultimo fotogramma della telecamera (porta 6000)
@@ -32,8 +37,24 @@ if sys.stdout is None or sys.stderr is None:
     print(f"--- avvio {time.strftime('%Y-%m-%d %H:%M:%S')} ---", flush=True)
 import bambu_server as bs  # noqa: E402
 
-PRINTER_NAME = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].isdigit() else None
-PORT = int(next((a for a in sys.argv[1:] if a.isdigit()), "8090"))
+import argparse  # noqa: E402
+import urllib.request  # noqa: E402
+
+_ap = argparse.ArgumentParser(description="Schermino di stato per Bambu A1 mini")
+_ap.add_argument("printer", nargs="?", default=None, help="nome in printers.toml (se ce n'è più d'una)")
+_ap.add_argument("port", nargs="?", type=int, default=int(os.environ.get("A1_PORT", 8090)))
+_ap.add_argument("--ntfy", default=os.environ.get("A1_NTFY", ""),
+                 help="argomento ntfy per le notifiche (nome lungo e casuale), vuoto = spente")
+_ap.add_argument("--ntfy-server", default=os.environ.get("A1_NTFY_SERVER", "https://ntfy.sh"))
+_ap.add_argument("--nome", default="A1 mini", help="nome della stampante nelle notifiche")
+# compatibilità con "python server.py 8090"
+_argv = sys.argv[1:]
+if _argv and _argv[0].isdigit():
+    _argv = [""] + _argv
+ARGS = _ap.parse_args(_argv)
+
+PRINTER_NAME = ARGS.printer or None
+PORT = ARGS.port
 
 NAME, PRINTER = bs.get_printer(PRINTER_NAME)
 
@@ -131,6 +152,78 @@ def command(action: str, level: int | None = None) -> dict:
     ok = not res.get("acknowledged") or res.get("result") in (None, "success", "SUCCESS")
     return {"ok": ok, "acknowledged": res.get("acknowledged"),
             "message": "Fatto" if ok else f"Rifiutato: {res.get('reason') or res.get('result')}"}
+
+
+# --------------------------------------------------------------------------- notifiche (ntfy)
+
+def notifica(titolo: str, testo: str, tag: str, priorita: int = 4) -> None:
+    if not ARGS.ntfy:
+        return
+    corpo = json.dumps({"topic": ARGS.ntfy, "title": f"{ARGS.nome}: {titolo}", "message": testo,
+                        "tags": [tag], "priority": priorita}).encode()
+
+    def invia():
+        try:
+            req = urllib.request.Request(ARGS.ntfy_server.rstrip("/") + "/", data=corpo,
+                                         headers={"Content-Type": "application/json"})
+            urllib.request.urlopen(req, timeout=10).close()
+        except Exception as e:  # noqa: BLE001
+            print("ntfy:", e, flush=True)
+
+    threading.Thread(target=invia, daemon=True).start()
+
+
+class Osservatore:
+    """Controlla lo stato ogni pochi secondi e avvisa sui cambi importanti."""
+
+    ATTIVI = ("PREPARE", "RUNNING", "PAUSE")
+
+    def __init__(self):
+        self.stato = None
+        self.errore = 0
+        self.inizio = None
+
+    def controlla(self, pr: dict) -> None:
+        st = pr.get("gcode_state")
+        if not st:
+            return
+        nome = (pr.get("subtask_name") or pr.get("gcode_file") or "stampa").removesuffix(".gcode.3mf")
+        prima = self.stato
+        if prima is not None and st != prima:
+            if st in ("PREPARE", "RUNNING") and prima not in self.ATTIVI:
+                self.inizio = time.time()
+                notifica("stampa iniziata", nome, "printer", 2)
+            elif st == "RUNNING" and prima == "PAUSE":
+                notifica("stampa ripresa", nome, "arrow_forward", 2)
+            elif st == "PAUSE":
+                fase = STAGES.get(pr.get("stg_cur"))
+                notifica("stampa in pausa ⏸", nome + (f" ({fase})" if fase else ""), "pause_button")
+            elif st == "FINISH" and prima in self.ATTIVI:
+                extra = ""
+                if self.inizio:
+                    d = time.time() - self.inizio
+                    extra = f" in {int(d // 3600)}h {int(d % 3600 // 60):02d}m"
+                notifica("stampa finita ✅", f"{nome} completata{extra}.", "white_check_mark")
+            elif st == "FAILED" and prima in self.ATTIVI:
+                notifica("stampa interrotta", nome, "x", 4)
+        err = pr.get("print_error") or 0
+        if isinstance(err, int) and err and err != self.errore:
+            notifica("errore ⚠️", f"Codice {err:08X} durante {nome}.", "warning", 5)
+        self.errore = err if isinstance(err, int) else 0
+        if st not in self.ATTIVI:
+            self.inizio = None if st in ("IDLE",) else self.inizio
+        self.stato = st
+
+
+def sorveglia():
+    oss = Osservatore()
+    while True:
+        try:
+            state, _ = PRINTER.get_state(refresh=True)
+            oss.controlla(state.get("print") or {})
+        except Exception as e:  # noqa: BLE001
+            print("sorveglianza:", e, flush=True)
+        time.sleep(5)
 
 
 # --------------------------------------------------------------------------- Ender (vista "entrambe")
@@ -264,4 +357,7 @@ class H(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     print(f"A1 mini: http://0.0.0.0:{PORT}  (stampante {NAME} @ {PRINTER.ip})", flush=True)
+    if ARGS.ntfy:
+        print(f"Notifiche ntfy attive: {ARGS.ntfy_server.rstrip('/')}/{ARGS.ntfy}", flush=True)
+        threading.Thread(target=sorveglia, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()

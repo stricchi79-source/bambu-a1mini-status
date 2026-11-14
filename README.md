@@ -5,6 +5,7 @@ Una pagina da aprire sul telefono per vedere e controllare una **Bambu Lab A1 mi
 - **Stato** in tempo reale: avanzamento, layer, tempo che manca e ora di fine, fase (livellamento, riscaldamento…), temperature, ventola, Wi‑Fi, filamento caricato.
 - **Telecamera** della stampante, direttamente nella pagina.
 - **Comandi**: pausa / riprendi, stop (con conferma), luce, velocità (silenziosa, standard, sport, ludicrous).
+- **Notifiche** su telefono e smartwatch con [ntfy](https://ntfy.sh): inizio, pausa, fine, interruzione, errori.
 - **Vista "entrambe"** (`/entrambe`): A1 mini ed [Ender-3 V3 KE](https://github.com/stricchi79-source/ender-ke-status) nella stessa pagina, con il riepilogo di quale stampa finisce prima.
 - Sette temi rétro (pompa di benzina, sala giochi, terminale, radio, juke-box, missione Luna, ugello rovente) con il pulsante 🎨.
 - Dal telefono **non** si avviano stampe: l'avvio resta una scelta fatta al PC.
@@ -30,6 +31,18 @@ python server.py
 Poi dal telefono apri `http://IP-DEL-PC:8090` (per esempio `http://192.168.1.14:8090`) e, dal menu del browser, **Aggiungi a schermata Home**: si apre come un'app. La vista con entrambe le stampanti è `http://IP-DEL-PC:8090/entrambe`; legge lo stato della Ender dal suo server sullo stesso PC (`ENDER_STATUS_URL`, predefinito `http://127.0.0.1:80/status`).
 
 Argomenti facoltativi: nome della stampante in `printers.toml` (se ce n'è più d'una) e porta (predefinita `8090`).
+
+### Notifiche sul telefono (e sullo smartwatch)
+
+Installa l'app gratuita [ntfy](https://ntfy.sh), iscriviti a un argomento con un nome lungo e casuale (es. `stampanti-7f3k9q2m`) e avvia il server con:
+
+```bash
+python server.py --ntfy stampanti-7f3k9q2m
+```
+
+Arriva una notifica quando la stampa inizia, va in pausa (con il motivo, es. filamento finito), riprende, finisce (con la durata), si interrompe o va in errore. Il titolo comincia con il nome della stampante (`--nome`, predefinito "A1 mini"): si può usare lo stesso argomento della [Ender](https://github.com/stricchi79-source/ender-ke-status) (`--ntfy … --nome Ender`) per avere tutto in un posto solo. Se lo smartwatch ripete le notifiche del telefono, le vedi anche al polso: basta abilitare ntfy nell'app dell'orologio.
+
+Chi conosce il nome dell'argomento può leggere le notifiche: sceglilo lungo e casuale, e non pubblicarlo.
 
 ### Avvio automatico (Windows)
 
