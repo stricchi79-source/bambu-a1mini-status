@@ -330,6 +330,10 @@ class H(SimpleHTTPRequestHandler):
             self.wfile.write(frame)
         elif self.path.startswith("/ender"):
             self._json(ender_status())
+        elif self.path.startswith("/ntfy"):
+            # Solo in rete locale: serve al pulsante "Attiva notifiche" della pagina
+            host = ARGS.ntfy_server.split("://", 1)[-1].rstrip("/")
+            self._json({"topic": ARGS.ntfy or None, "server": host})
         elif self.path.split("?")[0].rstrip("/") in ("/entrambe", "/entrambe.html"):
             self.path = "/entrambe.html"
             super().do_GET()

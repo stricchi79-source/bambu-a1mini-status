@@ -342,8 +342,19 @@
   <a class="btn open" id="ke-open" href="#">Dettagli Ender</a>
 </div>
 
+<a class="btn" id="b-ntfy" hidden style="text-align:center; text-decoration:none; margin-bottom:14px">🔔 Attiva notifiche su questo telefono</a>
+<div class="summary" id="ntfy-alt" hidden style="margin-top:-6px"><a id="ntfy-web" style="color:inherit">non si apre? usa la pagina web di ntfy</a></div>
+
 <div class="stripes thin"></div>
 <footer id="upd">—</footer>
+<script>
+fetch("ntfy", {cache:"no-store"}).then(r => r.json()).then(n => {
+  if (!n.topic) return;
+  const b = document.getElementById("b-ntfy"), w = document.getElementById("ntfy-web");
+  b.href = `ntfy://${n.server}/${n.topic}`; w.href = `https://${n.server}/${n.topic}`;
+  b.hidden = false; b.style.display = "block"; document.getElementById("ntfy-alt").hidden = false;
+}).catch(() => {});
+</script>
 
 <script>
 // ---------- Temi (stessi delle due app, senza "rovente") ----------
