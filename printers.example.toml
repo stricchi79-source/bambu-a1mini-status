@@ -7,9 +7,15 @@
 #
 # Sulla stampante vanno attivate la "Modalità solo LAN" e la "Modalità sviluppatore".
 # Ogni sezione [printers.<nome>] è una stampante; <nome> è quello da usare nei tool.
+# model: "A1 mini", "X2D", ... (X1 / X2 / H2 usano la telecamera RTSP: serve ffmpeg).
 
 [printers.a1mini]
 model = "A1 mini"
 ip = "192.168.1.50"
 serial = "0300AA000000000"
 access_code = "12345678"
+# [printers.x2d]
+# model = "X2D"
+# ip = "192.168.1.60"
+# serial = "20P0000000000000"
+# access_code = "abcdefgh"

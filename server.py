@@ -1,4 +1,4 @@
-"""Schermino di stato e comandi per la Bambu Lab A1 mini (LAN), da aprire sul telefono.
+"""Schermino di stato e comandi per stampanti Bambu Lab in LAN (A1 mini, X2D, ...), da aprire sul telefono.
 
 Uso: python server.py [nome_stampante] [porta] [--ntfy ARGOMENTO]
      (default: l'unica in printers.toml, porta 8090, notifiche spente)
@@ -9,7 +9,8 @@ smartwatch che ripete le notifiche) quando la stampa inizia, va in pausa, finisc
 si interrompe o va in errore.
 
 - GET  /status   stato in JSON (via MQTT, riusa bambu_server.py)
-- GET  /cam.jpg  ultimo fotogramma della telecamera (porta 6000)
+- GET  /cam.jpg  ultimo fotogramma della telecamera
+                 (A1/P1: porta 6000; X1/X2/H2: RTSP sulla porta 322, serve ffmpeg sul PC)
 - POST /cmd      {"action": "pause"|"resume"|"stop"|"light_on"|"light_off"|"speed", "level": 1-4}
 
 L'avvio di nuove stampe NON è previsto da qui: lo fa Claude, dopo conferma.
@@ -18,9 +19,11 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import socket
 import ssl
 import struct
+import subprocess
 import sys
 import threading
 import time
@@ -40,13 +43,13 @@ import bambu_server as bs  # noqa: E402
 import argparse  # noqa: E402
 import urllib.request  # noqa: E402
 
-_ap = argparse.ArgumentParser(description="Schermino di stato per Bambu A1 mini")
+_ap = argparse.ArgumentParser(description="Schermino di stato per stampanti Bambu Lab")
 _ap.add_argument("printer", nargs="?", default=None, help="nome in printers.toml (se ce n'è più d'una)")
 _ap.add_argument("port", nargs="?", type=int, default=int(os.environ.get("A1_PORT", 8090)))
 _ap.add_argument("--ntfy", default=os.environ.get("A1_NTFY", ""),
                  help="argomento ntfy per le notifiche (nome lungo e casuale), vuoto = spente")
 _ap.add_argument("--ntfy-server", default=os.environ.get("A1_NTFY_SERVER", "https://ntfy.sh"))
-_ap.add_argument("--nome", default="A1 mini", help="nome della stampante nelle notifiche")
+_ap.add_argument("--nome", default="", help="nome della stampante nelle notifiche (predefinito: il modello)")
 # compatibilità con "python server.py 8090"
 _argv = sys.argv[1:]
 if _argv and _argv[0].isdigit():
@@ -57,6 +60,10 @@ PRINTER_NAME = ARGS.printer or None
 PORT = ARGS.port
 
 NAME, PRINTER = bs.get_printer(PRINTER_NAME)
+MODEL = PRINTER.model or "A1 mini"
+ARGS.nome = ARGS.nome or MODEL
+# X1, X2 (X2D), H2 (H2D, H2S...) trasmettono la telecamera in RTSP; A1 e P1 sulla porta 6000.
+RTSP_CAMERA = MODEL.upper().replace(" ", "").startswith(("X1", "X2", "H2"))
 
 STAGES = {
     1: "livellamento piatto", 2: "preriscaldamento piatto", 3: "calibrazione assi", 4: "cambio filamento",
@@ -82,6 +89,54 @@ def _pct_fan(v):
 
 # --------------------------------------------------------------------------- stato
 
+def _color(c) -> str | None:
+    return "#" + c[:6] if isinstance(c, str) and len(c) >= 6 else None
+
+
+def _active_trays(pr: dict) -> set[int]:
+    """Slot AMS in uso, come indice globale (ams_id * 4 + slot)."""
+    out = set()
+    ams = pr.get("ams") or {}
+    try:
+        now = int(ams.get("tray_now", 255))
+        if now < 254:
+            out.add(now)
+    except (TypeError, ValueError):
+        pass
+    # Su X2D/H2D (due estrusori) ogni estrusore indica il suo slot in "snow": ams_id << 8 | slot
+    for ext in (((pr.get("device") or {}).get("extruder") or {}).get("info") or []):
+        sn = ext.get("snow")
+        if isinstance(sn, int) and (sn >> 8) < 254 and (sn & 0xFF) < 4:
+            out.add((sn >> 8) * 4 + (sn & 0xFF))
+    return out
+
+
+def parse_ams(pr: dict) -> list[dict]:
+    """Unità AMS con i loro slot: tipo, colore, % rimasta, se in uso."""
+    active = _active_trays(pr)
+    units = []
+    for u in ((pr.get("ams") or {}).get("ams") or []):
+        try:
+            uid = int(u.get("id", len(units)))
+        except (TypeError, ValueError):
+            uid = len(units)
+        trays = []
+        for t in u.get("tray") or []:
+            try:
+                tid = int(t.get("id", len(trays)))
+            except (TypeError, ValueError):
+                tid = len(trays)
+            remain = t.get("remain")
+            trays.append({
+                "slot": tid + 1,
+                "type": t.get("tray_type") or None,
+                "color": _color(t.get("tray_color")),
+                "remain": remain if isinstance(remain, int) and 0 <= remain <= 100 else None,
+                "active": uid * 4 + tid in active,
+            })
+        units.append({"id": uid, "humidity": u.get("humidity"), "temp": bs._num(u.get("temp")), "trays": trays})
+    return units
+
 def snapshot() -> dict:
     try:
         state, updated = PRINTER.get_state(refresh=True)
@@ -92,9 +147,17 @@ def snapshot() -> dict:
     vt = pr.get("vt_tray") or {}
     lights = {x.get("node"): x.get("mode") for x in (pr.get("lights_report") or []) if isinstance(x, dict)}
     stg = pr.get("stg_cur")
+    temps = st["temperatures"]
+    ams = parse_ams(pr)
+    in_use = [t for u in ams for t in u["trays"] if t["active"]]
+    if in_use:
+        filament = {"type": in_use[0]["type"], "color": in_use[0]["color"]}
+    else:
+        filament = {"type": vt.get("tray_type") or None, "color": _color(vt.get("tray_color"))}
     return {
         "ok": True,
         "printer": NAME,
+        "model": MODEL,
         "ip": PRINTER.ip,
         "age": round(time.time() - updated, 1) if updated else None,
         "state": st["state"],
@@ -105,17 +168,20 @@ def snapshot() -> dict:
         "layer": st["progress"].get("layer") or 0,
         "total_layers": st["progress"].get("total_layers") or 0,
         "remaining_min": st["progress"].get("remaining_minutes") or 0,
-        "nozzle": st["temperatures"]["nozzles"][0] if st["temperatures"]["nozzles"] else {},
-        "bed": st["temperatures"]["bed"],
+        "nozzle": temps["nozzles"][0] if temps["nozzles"] else {},
+        "nozzles": temps["nozzles"],
+        "bed": temps["bed"],
+        "chamber": temps.get("chamber"),
         "speed_level": pr.get("spd_lvl"),
         "speed_name": SPEEDS.get(pr.get("spd_lvl")),
         "speed_pct": pr.get("spd_mag"),
         "fan_part": _pct_fan(pr.get("cooling_fan_speed")),
         "fan_aux": _pct_fan(pr.get("big_fan1_speed")),
+        "fan_chamber": _pct_fan(pr.get("big_fan2_speed")),
         "wifi": pr.get("wifi_signal"),
         "light": lights.get("chamber_light"),
-        "filament": {"type": vt.get("tray_type") or None, "color": "#" + (vt.get("tray_color") or "")[:6]
-                     if vt.get("tray_color") else None},
+        "filament": filament,
+        "ams": ams,
         "error": st.get("print_error_code"),
         "hms": st.get("hms_alerts") or [],
         "sdcard": pr.get("sdcard"),
@@ -296,7 +362,81 @@ class Camera:
             return self.frame, self.frame_time
 
 
-CAM = Camera(PRINTER.ip, PRINTER.access_code)
+class RtspCamera:
+    """Telecamera di X1/X2/H2: RTSP su TLS (porta 322), letta con ffmpeg in fotogrammi JPEG.
+
+    ffmpeg resta acceso solo mentre qualcuno guarda. Va installato sul PC
+    (Windows: winget install ffmpeg) o indicato con la variabile FFMPEG.
+    """
+
+    def __init__(self, ip: str, code: str):
+        self.url = f"rtsps://bblp:{code}@{ip}:322/streaming/live/1"
+        self.frame: bytes | None = None
+        self.frame_time = 0.0
+        self.wanted_until = 0.0
+        self.error: str | None = None
+        self._lock = threading.Lock()
+        threading.Thread(target=self._run, daemon=True).start()
+
+    def want(self):
+        self.wanted_until = time.time() + 20
+
+    def _ffmpeg(self) -> str | None:
+        return os.environ.get("FFMPEG") or shutil.which("ffmpeg")
+
+    def _run(self):
+        while True:
+            if time.time() > self.wanted_until:
+                time.sleep(0.5)
+                continue
+            exe = self._ffmpeg()
+            if not exe:
+                self.error = "manca ffmpeg sul PC (winget install ffmpeg)"
+                time.sleep(5)
+                continue
+            cmd = [exe, "-hide_banner", "-loglevel", "error", "-rtsp_transport", "tcp",
+                   "-i", self.url, "-an", "-vf", "fps=2,scale=1280:-2", "-q:v", "6",
+                   "-f", "image2pipe", "-vcodec", "mjpeg", "-"]
+            flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            try:
+                proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                        stdin=subprocess.DEVNULL, creationflags=flags)
+            except OSError as e:
+                self.error = f"ffmpeg non parte: {e}"
+                time.sleep(5)
+                continue
+            buf = b""
+            try:
+                while time.time() < self.wanted_until:
+                    chunk = proc.stdout.read1(65536) if hasattr(proc.stdout, "read1") else proc.stdout.read(4096)
+                    if not chunk:
+                        break
+                    buf += chunk
+                    while True:
+                        start = buf.find(b"\xff\xd8")
+                        end = buf.find(b"\xff\xd9", start + 2) if start >= 0 else -1
+                        if start < 0 or end < 0:
+                            break
+                        with self._lock:
+                            self.frame, self.frame_time, self.error = buf[start:end + 2], time.time(), None
+                        buf = buf[end + 2:]
+                    if len(buf) > 8 * 1024 * 1024:
+                        buf = b""
+            finally:
+                proc.kill()
+                err = (proc.stderr.read() or b"").decode("utf-8", "replace").strip()
+                proc.wait()
+            if time.time() < self.wanted_until:
+                # uscito da solo: di solito codice errato o modalità LAN/telecamera non attiva
+                self.error = (err.splitlines()[-1] if err else "flusso interrotto").replace(self.url, "rtsps://…")
+                time.sleep(3)
+
+    def get(self):
+        with self._lock:
+            return self.frame, self.frame_time
+
+
+CAM = (RtspCamera if RTSP_CAMERA else Camera)(PRINTER.ip, PRINTER.access_code)
 
 
 # --------------------------------------------------------------------------- HTTP
@@ -360,7 +500,9 @@ class H(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"A1 mini: http://0.0.0.0:{PORT}  (stampante {NAME} @ {PRINTER.ip})", flush=True)
+    print(f"{MODEL}: http://0.0.0.0:{PORT}  (stampante {NAME} @ {PRINTER.ip})", flush=True)
+    if RTSP_CAMERA and not (os.environ.get("FFMPEG") or shutil.which("ffmpeg")):
+        print("Telecamera: per questo modello serve ffmpeg (Windows: winget install ffmpeg)", flush=True)
     if ARGS.ntfy:
         print(f"Notifiche ntfy attive: {ARGS.ntfy_server.rstrip('/')}/{ARGS.ntfy}", flush=True)
         threading.Thread(target=sorveglia, daemon=True).start()

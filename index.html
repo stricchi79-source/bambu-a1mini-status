@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#c8281e">
-<title>A1 mini</title>
+<title>Bambu</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="A1 mini">
+<meta name="apple-mobile-web-app-title" content="Bambu">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -251,6 +251,14 @@
   .btn.danger{color:#fff; background:#b3261e; box-shadow:inset 0 0 0 2px #ff8a80, 0 0 10px #ff3b2f88}
   .btn.sm{font-size:14px; padding:10px 2px; letter-spacing:1px}
   .btn.sel{background:var(--led); color:var(--glass)}
+  .tgt[hidden],.plate[hidden]{display:none}
+  .ams{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px}
+  .slot{border-radius:8px; padding:8px 4px; text-align:center; background:var(--glass);
+    box-shadow:inset 0 0 0 2px var(--ghost); font:800 13px "Barlow Condensed",sans-serif;
+    letter-spacing:1px; color:var(--unit)}
+  .slot i{display:block; width:22px; height:22px; margin:0 auto 4px; border-radius:50%; border:2px solid #0006}
+  .slot.on{box-shadow:inset 0 0 0 2px var(--led), 0 0 10px var(--glow); color:var(--led2)}
+  .slot small{display:block; font-size:11px; opacity:.8}
   .hms{font:700 13px "Barlow Condensed",sans-serif; color:#ff6b5e; text-align:center; letter-spacing:1px}
   dialog{border:0; border-radius:16px; padding:20px; max-width:320px; width:calc(100% - 32px);
     font:600 17px/1.3 "Barlow Condensed",sans-serif; text-align:center; background:#fff; color:#222}
@@ -267,7 +275,7 @@
 
 <div class="sign">
   <button class="tema" id="tema" aria-label="Cambia sfondo" title="Cambia sfondo">🎨</button>
-  <h1>BAMBU A1 MINI</h1>
+  <h1 id="title">BAMBU</h1>
   <div class="sub" id="sub">STAZIONE DI STAMPA · PLA SUPER</div>
   <div class="stripes"></div>
 </div>
@@ -298,14 +306,23 @@
 
 <div class="grid2">
   <div class="plate">
-    <div class="lbl">Ugello °C</div>
+    <div class="lbl" id="nl">Ugello °C</div>
     <div class="win"><span class="seg lg" id="nt"></span></div>
     <div class="tgt">META <div class="win"><span class="seg" id="ntt"></span></div></div>
+    <div class="tgt" id="n2" hidden>SINISTRO <div class="win"><span class="seg" id="n2t"></span></div></div>
   </div>
   <div class="plate">
     <div class="lbl">Piano °C</div>
     <div class="win"><span class="seg lg" id="bt"></span></div>
     <div class="tgt">META <div class="win"><span class="seg" id="btt"></span></div></div>
+  </div>
+</div>
+
+<div class="plate" id="p-ch" hidden style="margin-top:14px">
+  <div class="row3">
+    <div><div class="lbl">Camera °C</div><div class="win"><span class="seg md" id="ct"></span></div></div>
+    <div><div class="lbl">Meta °C</div><div class="win"><span class="seg md" id="ctt"></span></div></div>
+    <div><div class="lbl">Vent. cam. %</div><div class="win"><span class="seg md" id="cfan"></span></div></div>
   </div>
 </div>
 
@@ -318,6 +335,11 @@
   <div class="tgt" style="justify-content:center; gap:10px; margin-top:12px">
     FILAMENTO <span class="chip" id="fil"><i></i>—</span>
   </div>
+</div>
+
+<div class="plate" id="p-ams" hidden>
+  <div class="lbl">AMS</div>
+  <div id="ams"></div>
 </div>
 
 <div class="plate">
@@ -455,8 +477,23 @@ function render(){
   if (active && L) { const d = new Date(Date.now() + L*1000);
     seg("eta", String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0")); }
   else seg("eta", "--:--");
-  const nz = s.nozzle || {}, bd = s.bed || {};
+  if (s.model) { const m = String(s.model).toUpperCase();
+    if ($("title").textContent !== "BAMBU " + m) { $("title").textContent = "BAMBU " + m; document.title = s.model; } }
+  const nz = s.nozzle || {}, bd = s.bed || {}, nzs = s.nozzles || [];
   seg("nt", t1(nz.current_c), 5); seg("ntt", t1(nz.target_c), 5);
+  $("n2").hidden = nzs.length < 2;
+  $("nl").textContent = nzs.length > 1 ? "Ugello dx °C" : "Ugello °C";
+  if (nzs.length > 1) seg("n2t", t1(nzs[1].current_c), 5);
+  const ch = s.chamber;
+  $("p-ch").hidden = !ch;
+  if (ch) { seg("ct", t1(ch.current_c), 5); seg("ctt", ch.target_c ? t1(ch.target_c) : "---", 5);
+            seg("cfan", s.fan_chamber ?? 0, 3); }
+  const ams = s.ams || [];
+  $("p-ams").hidden = !ams.length;
+  const esc = t => String(t ?? "").replace(/[&<>"]/g, c => "&#" + c.charCodeAt(0) + ";");
+  $("ams").innerHTML = ams.map(u => `<div class="ams">` + (u.trays || []).map(t =>
+    `<div class="slot${t.active ? " on" : ""}"><i style="background:${/^#[0-9a-f]{6}$/i.test(t.color || "") ? t.color : "#0000"}"></i>` +
+    `${esc(t.type || "vuoto")}<small>${t.remain != null ? t.remain + "%" : "&nbsp;"}</small></div>`).join("") + `</div>`).join("");
   seg("bt", t1(bd.current_c), 5); seg("btt", t1(bd.target_c), 5);
   seg("fan", s.fan_part ?? 0, 3);
   seg("spd", s.speed_pct ?? 100, 3);

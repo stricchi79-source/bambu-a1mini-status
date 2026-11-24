@@ -12,9 +12,20 @@ Una pagina da aprire sul telefono per vedere e controllare una **Bambu Lab A1 mi
 
 ## Requisiti
 
-- Bambu Lab A1 mini (o un altro modello A1/P1, non provato) con **Modalità solo LAN** e **Modalità sviluppatore** attive: con i firmware recenti, senza modalità sviluppatore la stampante non accetta comandi da programmi di terze parti.
+- Bambu Lab A1 mini (o un altro modello A1/P1, non provato; X2D: vedi sotto) con **Modalità solo LAN** e **Modalità sviluppatore** attive: con i firmware recenti, senza modalità sviluppatore la stampante non accetta comandi da programmi di terze parti.
 - Python 3.11 o più recente sul PC: `pip install -r requirements.txt`
 - PC e telefono sulla stessa rete della stampante.
+
+## Bambu Lab X2D (e X1 / H2D)
+
+Con `model = "X2D"` in `printers.toml` la pagina si adatta:
+
+- titolo e notifiche con il nome del modello;
+- **due ugelli** (il destro in grande, il sinistro sotto), **temperatura della camera** con la sua meta e la ventola della camera;
+- riquadro **AMS** con i quattro slot: tipo, colore, percentuale rimasta e slot in uso evidenziato;
+- **telecamera**: questi modelli la trasmettono in RTSP (porta 322), non sulla porta 6000 come A1/P1. Serve **ffmpeg** sul PC (Windows: `winget install ffmpeg`, poi riapri il terminale; in alternativa la variabile `FFMPEG` con il percorso di `ffmpeg.exe`). In "Impostazioni → Rete" della stampante va attivata anche la visione in diretta via LAN, se presente.
+
+Il riconoscimento è dal campo `model`: valori che iniziano con `X1`, `X2` o `H2` usano la telecamera RTSP. Non ancora provato su una X2D vera: stato e comandi usano lo stesso MQTT degli altri modelli; lo slot AMS attivo su doppio estrusore è letto da un campo (`snow`) dedotto dalla H2D.
 
 ## Configurazione
 
@@ -79,7 +90,7 @@ I file `.gcode.3mf` per la stampante si ottengono per esempio con OrcaSlicer: `o
 - Il primo report MQTT può essere parziale: il server aspetta quello completo (con `gcode_state`) prima di rispondere.
 - Sul canale dati FTPS la stampante non risponde alla chiusura TLS: il caricamento chiude la connessione senza aspettarla, altrimenti resterebbe appeso fino al timeout.
 - La A1 invia una temperatura della camera fittizia (5 °C): per i modelli A1 non viene mostrata.
-- La telecamera (porta 6000) viene letta solo mentre qualcuno la sta guardando.
+- La telecamera (porta 6000, o RTSP 322 sui modelli X/H) viene letta solo mentre qualcuno la sta guardando.
 
 ## Licenza
 
